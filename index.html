@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>Můj trénink</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#151d30;--panel2:#1c2740;--text:#f4f6fb;--muted:#a7b1c5;--accent:#8bd3a8;--line:#2b3852;--danger:#ff8d8d}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#111a2e 0,#0b1020 300px);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom)}
+main{max-width:620px;margin:0 auto;padding:18px 0 40px}
+header{display:flex;justify-content:space-between;align-items:center;margin:4px 0 18px}
+h1{font-size:26px;margin:0;font-weight:800;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:13px;margin-top:5px}
+.pill{border:1px solid #42624f;color:var(--accent);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700}
+.card{background:rgba(21,29,48,.96);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:0 8px 25px #0002}
+h2{font-size:17px;margin:0 0 12px}
+label{display:block;color:var(--muted);font-size:12px;font-weight:700;margin:0 0 6px}
+input,select{width:100%;min-height:48px;border-radius:12px;border:1px solid var(--line);background:#0e1628;color:var(--text);font-size:16px;padding:11px 12px;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field{margin:0 0 11px}
+button{border:0;border-radius:12px;min-height:46px;padding:11px 14px;font-size:15px;font-weight:800;cursor:pointer}
+.primary{background:var(--accent);color:#102016;width:100%}
+.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.small{min-height:34px;padding:7px 10px;font-size:12px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
+.tab{background:#111a2d;color:var(--muted);border:1px solid var(--line)}
+.tab.active{background:var(--panel2);color:var(--text);border-color:#658c73}
+.daylist{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.day{border:1px solid var(--line);background:#10182a;border-radius:10px;text-align:center;padding:9px 2px;font-size:11px;color:var(--muted)}
+.day strong{display:block;color:var(--text);font-size:12px;margin-bottom:4px}
+.day.active{border-color:var(--accent);background:#1d3429}
+.day.rest{opacity:.55}
+.entry{padding:12px 0;border-top:1px solid var(--line)}
+.entry:first-child{border-top:0;padding-top:0}
+.entrytop{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.entryname{font-weight:800}
+.meta{color:var(--muted);font-size:13px;margin-top:5px;line-height:1.5}
+.empty{color:var(--muted);font-size:14px;line-height:1.5}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.actions button{flex:1}
+.hidden{display:none!important}
+footer{color:var(--muted);font-size:11px;text-align:center;padding:10px 8px 24px;line-height:1.5}
+.notice{font-size:12px;color:var(--muted);line-height:1.5;margin-top:9px}
+.record-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tag{font-size:11px;color:var(--accent);background:#1d3429;border-radius:7px;padding:5px 8px}
+@media(min-width:520px){.grid.three{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<main>
+<header>
+ <div><h1>🏋️ Můj trénink</h1><div class="sub">Jednoduchý zapisovač do posilovny</div></div>
+ <span class="pill">MOJE VÝKONY</span>
+</header>
+
+<section class="card">
+ <div class="record-head"><h2>Týdenní plán</h2><span class="tag" id="todayLabel"></span></div>
+ <div class="daylist" id="week"></div>
+ <div class="notice">Po: volno · Út: prsa, triceps, biceps · St: záda, ramena, nohy · Čt: volno · Pá: prsa, triceps, biceps · So: záda, ramena, nohy · Ne: plyometrie</div>
+</section>
+
+<div class="tabs">
+ <button class="tab active" id="trainTab" onclick="showTab('train')">Zapisovat trénink</button>
+ <button class="tab" id="historyTab" onclick="showTab('history')">Historie</button>
+ <button class="tab" id="measureTab" onclick="showTab('measure')">Měření</button>
+</div>
+
+<section id="trainView">
+ <section class="card">
+  <h2>Nová série</h2>
+  <div class="field">
+   <label for="exercise">Cvik</label>
+   <input id="exercise" list="exerciseList" placeholder="Např. Bench press">
+   <datalist id="exerciseList">
+    <option>Bench press</option><option>Bench press – multipress</option><option>Rozpažování</option>
+    <option>Peck deck</option><option>Stahování kladky na triceps</option><option>Francouzský tlak</option>
+    <option>Bicepsový zdvih</option><option>Shyby</option><option>Přítahy v předklonu</option>
+    <option>Stahování horní kladky</option><option>Veslování na kladce</option><option> Tlaky na ramena</option>
+    <option up>Upažování</option><option>Dřepy</option><option>Leg press</option><option>Zakopávání</option>
+    <option>Výpony lýtek</option><option>Výskoky</option><option>Skoky z místa</option>
+   </datalist>
+  </div>
+  <div class="grid three">
+   <div class="field"><label for="weight">Zátěž (kg)</label><input id="weight" type="number" min="0" step="0.5" inputmode="decimal" placeholder="50"></div>
+   <div class="field"><label for="reps">Opakování</label><input id="reps" type="number" min="1" step="1" inputmode="numeric" placeholder="6"></div>
+   <div class="field"><label for="sets">Série</label><input id="sets" type="number" min="1" step="1" inputmode="numeric" value="1"></div>
+  </div>
+  <div class="field">
+   <label for="equipment">Poznámka / vybavení</label>
+   <input id="equipment" placeholder="Např. osa na multipressu">
+  </div>
+  <button class="primary" onclick="saveEntry()">＋ Uložit sérii</button>
+  <div class="notice">Každý záznam se uloží do historie v tomto zařízení. Počet sérií můžeš zadat najednou.</div>
+ </section>
+
+ <section class="card">
+  <div class="record-head"><h2>Dnešní trénink</h2><span class="tag" id="sessionDate"></span></div>
+  <div id="todayEntries" class="empty">Zatím tu nejsou žádné série.</div>
+ </section>
+</section>
+
+<section id="historyView" class="hidden">
+ <section class="card">
+  <h2>Historie tréninků</h2>
+  <div id="historyEntries" class="empty">Zatím nemáš uložené žádné tréninky.</div>
+  <div class="actions">
+   <button class="secondary" onclick="exportData()">Zálohovat data</button>
+   <button class="secondary" onclick="document.getElementById('importFile').click()">Obnovit zálohu</button>
+   <input class="hidden" id="importFile" type="file" accept="application/json" onchange="importData(event)">
+  </div>
+ </section>
+</section>
+
+
+<section id="measureView" class="hidden">
+ <section class="card">
+  <div class="record-head"><h2>Tělesný progres</h2><span class="tag" id="measureDue"></span></div>
+  <p class="empty">Startovní váha je nastavena na 71 kg. První kontrolní měření bude za měsíc. Ostatní výchozí míry můžeš doplnit kdykoliv.</p>
+  <div class="grid">
+   <div class="field"><label for="mWeight">Váha (kg)</label><input id="mWeight" type="number" step="0.1" inputmode="decimal" placeholder="71"></div>
+   <div class="field"><label for="mHeight">Výška (cm)</label><input id="mHeight" type="number" step="0.1" inputmode="decimal" placeholder="168"></div>
+   <div class="field"><label for="mChest">Hrudník (cm)</label><input id="mChest" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mWaist">Pas (cm)</label><input id="mWaist" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mBelly">Břicho (cm)</label><input id="mBelly" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mHips">Boky (cm)</label><input id="mHips" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mArmR">Biceps pravý (cm)</label><input id="mArmR" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mArmL">Biceps levý (cm)</label><input id="mArmL" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mThighR">Stehno pravé (cm)</label><input id="mThighR" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mThighL">Stehno levé (cm)</label><input id="mThighL" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mCalfR">Lýtko pravé (cm)</label><input id="mCalfR" type="number" step="0.1" inputmode="decimal"></div>
+   <div class="field"><label for="mCalfL">Lýtko levé (cm)</label><input id="mCalfL" type="number" step="0.1" inputmode="decimal"></div>
+  </div>
+  <div class="field"><label for="mNote">Poznámka</label><input id="mNote" placeholder="Např. měření ráno nalačno"></div>
+  <button class="primary" onclick="saveMeasurement()">＋ Uložit měření</button>
+  <div class="notice">Měř se pokud možno vždy za stejných podmínek, ideálně ráno. Nevyplněné míry můžeš nechat prázdné.</div>
+ </section>
+ <section class="card"><h2>Porovnání s předchozím měřením</h2><div id="measureCompare" class="empty">Zatím není uložené žádné měření.</div></section>
+ <section class="card"><h2>Historie měření</h2><div id="measureHistory" class="empty">Zatím bez měření.</div></section>
+</section>
+
+<footer>Data zůstávají uložená v tomto prohlížeči. Pravidelně si můžeš stáhnout zálohu.</footer>
+</main>
+<script>
+const KEY='mujTrenink_v1';
+const plan=[
+ ['Po','Volno'],['Út','Prsa + ruce'],['St','Záda + ramena + nohy'],
+ ['Čt','Volno'],['Pá','Prsa + ruce'],['So','Záda + ramena + nohy'],['Ne','Plyometrie']
+];
+const dayNames=['Neděle','Pondělí','Úterý','Středa','Čtvrtek','Pátek','Sobota'];
+const today=new Date();
+const iso=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
+const fmt=s=>new Date(s+'T12:00:00').toLocaleDateString('cs-CZ',{day:'numeric',month:'long',year:'numeric'});
+let entries=[];
+try{entries=JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){entries=[]}
+if(!entries.length){
+ entries=[{id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),date:'2026-11-17',exercise:'Bench press',weight:50,reps:6,sets:1,equipment:'Osa na multipressu',created:Date.now()}];
+ persist();
+}
+function persist(){localStorage.setItem(KEY,JSON.stringify(entries))}
+const MEASURE_KEY='mujTrenink_measurements_v1';
+let measurements=[];
+try{measurements=JSON.parse(localStorage.getItem(MEASURE_KEY)||'[]')}catch(e){measurements=[]}
+if(!measurements.length){
+ measurements=[{date:'2026-11-17',weight:71,height:null,chest:null,waist:null,belly:null,hips:null,armR:null,armL:null,thighR:null,thighL:null,calfR:null,calfL:null,note:'Startovní váha'}];
+ localStorage.setItem(MEASURE_KEY,JSON.stringify(measurements));
+}
+function persistMeasurements(){localStorage.setItem(MEASURE_KEY,JSON.stringify(measurements))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderWeek(){
+ const dow=today.getDay();const idx=dow===0?6:dow-1;
+ document.getElementById('week').innerHTML=plan.map((p,i)=>`<div class="day ${i===idx?'active':''} ${p[1]==='Volno'?'rest':''}"><strong>${p[0]}</strong>${p[1]==='Volno'?'Volno':p[1]==='Plyometrie'?'Plyo':p[1]==='Prsa + ruce'?'Prsa':p[1].startsWith('Záda')?'Záda':''}</div>`).join('');
+ document.getElementById('todayLabel').textContent=dayNames[dow];
+}
+function saveEntry(){
+ const exercise=document.getElementById('exercise').value.trim();
+ const weight=document.getElementById('weight').value;
+ const reps=document.getElementById('reps').value;
+ const sets=document.getElementById('sets').value||1;
+ const equipment=document.getElementById('equipment').value.trim();
+ if(!exercise||reps===''||Number(reps)<1){alert('Vyplň prosím cvik a počet opakování.');return}
+ entries.unshift({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),date:iso(today),exercise,weight:weight===''?null:Number(weight),reps:Number(reps),sets:Number(sets),equipment,created:Date.now()});
+ persist();render();
+ document.getElementById('exercise').value='';document.getElementById('weight').value='';
+ document.getElementById('reps').value='';document.getElementById('sets').value='1';document.getElementById('equipment').value='';
+}
+function removeEntry(id){if(confirm('Opravdu smazat tento záznam?')){entries=entries.filter(x=>x.id!==id);persist();render()}}
+function entryHTML(e){
+ const load=e.weight===null||e.weight===''?'bez zadané zátěže':`${e.weight} kg`;
+ return `<div class="entry"><div class="entrytop"><div class="entryname">${esc(e.exercise)}</div><button class="secondary small" onclick="removeEntry('${esc(e.id)}')">Smazat</button></div><div class="meta">${load} · ${e.sets} série × ${e.reps} opakování${e.equipment?' · '+esc(e.equipment):''}</div></div>`;
+}
+function render(){
+ document.getElementById('sessionDate').textContent=fmt(iso(today));
+ const todayItems=entries.filter(e=>e.date===iso(today));
+ document.getElementById('todayEntries').innerHTML=todayItems.length?todayItems.map(entryHTML).join(''):'<div class="empty">Zatím tu nejsou žádné série. Přidej první cvik nahoře.</div>';
+ const groups={};entries.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created).forEach(e=>(groups[e.date]??=[]).push(e));
+ const dates=Object.keys(groups);
+ document.getElementById('historyEntries').innerHTML=dates.length?dates.map(d=>`<div class="entry"><div class="entryname">${fmt(d)}</div>${groups[d].map(entryHTML).join('')}</div>`).join(''):'<div class="empty">Zatím nemáš uložené žádné tréninky.</div>';
+}
+function showTab(tab){
+ const views={train:'trainView',history:'historyView',measure:'measureView'};
+ Object.keys(views).forEach(k=>{
+  document.getElementById(views[k]).classList.toggle('hidden',k!==tab);
+  const btn=document.getElementById(k==='train'?'trainTab':k==='history'?'historyTab':'measureTab');
+  btn.classList.toggle('active',k===tab);
+ });
+}
+const measureFields=[
+ ['weight','Váha','kg'],['height','Výška','cm'],['chest','Hrudník','cm'],['waist','Pas','cm'],
+ ['belly','Břicho','cm'],['hips','Boky','cm'],['armR','Biceps pravý','cm'],['armL','Biceps levý','cm'],
+ ['thighR','Stehno pravé','cm'],['thighL','Stehno levé','cm'],['calfR','Lýtko pravé','cm'],['calfL','Lýtko levé','cm']
+];
+function saveMeasurement(){
+ const m={date:iso(new Date()),note:document.getElementById('mNote').value.trim()};
+ measureFields.forEach(([key])=>{const id='m'+key[0].toUpperCase()+key.slice(1);const v=document.getElementById(id).value;m[key]=v===''?null:Number(v)});
+ if(measurements.some(x=>x.date===m.date)){if(!confirm('Pro dnešní datum už měření existuje. Chceš ho nahradit?'))return;measurements=measurements.filter(x=>x.date!==m.date)}
+ if(measureFields.every(([k])=>m[k]===null)){alert('Zadej alespoň jednu hodnotu.');return}
+ measurements.push(m);measurements.sort((a,b)=>a.date.localeCompare(b.date));persistMeasurements();renderMeasurements();
+ document.getElementById('mNote').value='';
+}
+function renderMeasurements(){
+ const sorted=measurements.slice().sort((a,b)=>a.date.localeCompare(b.date));
+ const latest=sorted[sorted.length-1], previous=sorted.length>1?sorted[sorted.length-2]:null, base=sorted[0];
+ const next=new Date(base.date+'T12:00:00');next.setMonth(next.getMonth()+1);
+ document.getElementById('measureDue').textContent='Další kontrola: '+next.toLocaleDateString('cs-CZ',{day:'numeric',month:'numeric',year:'numeric'});
+ const fmtVal=v=>v===null||v===undefined?'—':String(v).replace('.',',');
+ const rows=measureFields.map(([key,label,unit])=>{
+  const a=previous?previous[key]:null,b=latest?latest[key]:null;
+  const delta=(a!==null&&a!==undefined&&b!==null&&b!==undefined)?b-a:null;
+  return `<div class="entry"><div class="entrytop"><strong>${label}</strong><span>${fmtVal(b)} ${b!==null&&b!==undefined?unit:''}</span></div><div class="meta">${previous?'Předchozí: '+fmtVal(a)+' '+(a!==null&&a!==undefined?unit:'')+' · ':''}${delta===null?'Bez srovnání':(delta>0?'+':'')+delta.toFixed(1).replace('.',',')+' '+unit}</div></div>`;
+ }).join('');
+ document.getElementById('measureCompare').innerHTML=latest?`<div class="meta">Poslední měření: ${fmt(latest.date)}${previous?' · změny proti '+fmt(previous.date):' · zatím pouze startovní hodnoty'}</div>${rows}`:'Zatím není uložené žádné měření.';
+ document.getElementById('measureHistory').innerHTML=sorted.slice().reverse().map(m=>`<div class="entry"><div class="entrytop"><strong>${fmt(m.date)}</strong><span>${m.weight===null?'—':fmtVal(m.weight)+' kg'}</span></div><div class="meta">${measureFields.filter(([k])=>k!=='weight'&&m[k]!==null&&m[k]!==undefined).map(([k,l,u])=>l+': '+fmtVal(m[k])+' '+u).join(' · ')||'Další míry nebyly vyplněny'}${m.note?' · '+esc(m.note):''}</div></div>`).join('')||'Zatím bez měření.';
+}
+function exportData(){
+ const blob=new Blob([JSON.stringify({entries,measurements},null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='muj-trenink-zaloha.json';a.click();URL.revokeObjectURL(url);
+}
+function importData(ev){
+ const file=ev.target.files[0];if(!file)return;
+ const reader=new FileReader();reader.onload=()=>{try{const data=JSON.parse(reader.result);if(Array.isArray(data)){entries=data}else if(data&&Array.isArray(data.entries)){entries=data.entries;if(Array.isArray(data.measurements))measurements=data.measurements}else{throw Error()}persist();persistMeasurements();render();renderMeasurements();alert('Záloha byla obnovena.')}catch(e){alert('Soubor se nepodařilo načíst.')}};reader.readAsText(file);ev.target.value='';
+}
+renderWeek();render();renderMeasurements();
+</script>
+</body>
+</html>
